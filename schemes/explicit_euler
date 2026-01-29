@@ -1,0 +1,26 @@
+# Forward Euler Scheme Implementation
+# theta = 0.0
+
+class ExplicitEulerScheme:
+
+    def __init__(self, mapOperator, bc):
+        self.dt_ = None
+        self.mapOperator_ = mapOperator
+        self.bc_ = bc
+    
+    def step(self, u, t):
+        self.step_with_theta(u, t, 1.0)
+        
+    def step_with_theta(self, u, t, theta):
+        if t - self.dt_ < -1e-8:
+            raise ValueError("a step towards negative time is not allowed.")
+        
+        self.mapOperator_.setTime(max(0.0, t- self.dt_), t)
+        self.bc_.setTime(max(0.0, t - self.dt_))
+
+        self.bc_.applyBeforeApplying(self.mapOperator_)
+        u += (theta * self.dt_) * self.mapOperator_.apply(u)
+        self.bc_.applyAfterApplying(u)
+
+    def setStep(self, dt):
+        self.dt_ = dt
